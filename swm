@@ -3,7 +3,7 @@
 # Enable all connected montiors, disable all disconnected ones.
 # Multiple monitors will be added to the right of previous ones.
 #
-# Author Thomas Ruoff <Thomas.Ruoff@gmail.com>
+# Author Thomas Ruoff <ThomasRuoff@gmail.com>
 
 set -e
 
