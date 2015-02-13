@@ -21,28 +21,45 @@ usage() {
 
 echoerr() { echo "$@" 1>&2; }
 
+getFirstWord() {
+    awk '{print $1}'
+}
+
+linesToWords() {
+    awk 'BEGIN{ORS=" "} {print}'
+}
+
+wordsToLines() {
+    awk 'BEGIN{RS=" "} {print}'
+}
+
+without() {
+    comm -3 <(echo "$1") <(echo "$2")
+}
+
+
 if [[ $1 == "-h" ]] || [[ $1 == "--help" ]] ; then
     usage
     exit
 fi
 
 TARGET=$1;
-CONNECTED=$( xrandr | grep " connected" | awk 'BEGIN{ORS=" "} {print $1}');
-DISCONNECTED=$( xrandr | grep "disconnected" | awk 'BEGIN{ORS=" "} {print $1}');
+CONNECTED=$( xrandr | grep " connected" | sort | getFirstWord);
+DISCONNECTED=$( xrandr | grep "disconnected" | sort | getFirstWord);
 
 POSTCMD="herbstclient reload";
 
-
-echo connected devices: $CONNECTED;
-echo disconnected devices: $DISCONNECTED;
+echo connected devices: $(echo $CONNECTED | wordsToLines);
+echo disconnected devices: $(echo $DISCONNECTED | wordsToLines);
 
 if [[ -n "$TARGET" ]] && [[ ! "$CONNECTED" =~ "$TARGET" ]] ; then
     echoerr "error: device $1 is not connected";
     exit 1;
 fi
 
-FORON=${1-$CONNECTED};
-FOROFF="$DISCONNECTED ${CONNECTED//$TARGET/}";
+FORON=${@-$CONNECTED};
+
+FOROFF="$DISCONNECTED $(without "$CONNECTED" "$FORON")";
 
 # turn off all disconnected monitors
 XRANDR_OFF_OPTIONS="";
