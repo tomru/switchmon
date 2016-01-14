@@ -1,0 +1,27 @@
+{
+  "name": "switchmon",
+  "version": "1.0.0",
+  "description": "Simple helper for turning on/off connected/disconnected monitors with xrandr",
+  "main": "indes.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tomru/switchmon.git"
+  },
+  "keywords": [
+    "xrandr",
+    "monitor"
+  ],
+  "author": "Thomas Ruoff",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tomru/switchmon/issues"
+  },
+  "homepage": "https://github.com/tomru/switchmon#readme",
+  "dependencies": {
+    "minimist": "^1.2.0",
+    "xrandr-parse": "^0.1.1"
+  }
+}
