@@ -1,25 +1,9 @@
 #!/usr/bin/env node
-const exec = require('child_process').exec;
+'use strict';
+
 const argv = require('minimist')(process.argv.slice(2));
 const xrandrParse = require('xrandr-parse');
-
-if (argv.help || argv.h) {
-    console.log(
-`swm - a helper to switch connected monitors
-
-usage: swm [monitor1 [monitor2]...] [--postCmd "<some commmand>"]
-
-If monitor is not passed it turns on all connected devices
-and lays them out next to each other in the order detected.
-
-monitor: The string as reported by the script. If provided only
-this monitor will be turned on.`
-    );
-
-    return;
-}
-
-const monitorsSelected = argv._;
+const exec = require('child_process').exec;
 
 function getDevices() {
     return new Promise((resolve, reject) => {
@@ -33,21 +17,46 @@ function getDevices() {
     });
 }
 
-function getDeviceStatus(deviceKey, device) {
-    if (monitorsSelected.indexOf(deviceKey) > -1 && device.connected) {
-        return '--auto';
-    }
-    return '--off';
-}
+function generateXrandrOptions(monitorList, devices) {
+    let xrandrOptions = '';
+    let deviceOrder = Object.keys(devices).sort();
 
-function genXrandrOptions(devices) {
-    var xrandrOptions = '';
-
-    Object.keys(devices).forEach(deviceKey => {
-        const device = devices[deviceKey];
-        const deviceStatus = getDeviceStatus(deviceKey, device);
-        xrandrOptions += ['', '--output', deviceKey, deviceStatus].join(' ');
+    // remove explicitly selected monitors inside the array and add them to the
+    // beginning in the order they have been specified.
+    monitorList.reverse().forEach((monitor) => {
+        const index = deviceOrder.indexOf(monitor);
+        if (index < 0) {
+            console.error('Unkown monitor', monitor, '(ignored)');
+            return;
+        }
+        deviceOrder.splice(index, 1);
+        deviceOrder.unshift(monitor);
     });
+
+    let prevDevice;
+    deviceOrder.forEach(deviceKey => {
+        const device = devices[deviceKey];
+
+        const deviceStatus = device.connected ? '--auto' : '--off';
+        const monitorOptions = ['', '--output', deviceKey, deviceStatus];
+
+        if (device.connected) {
+            if (prevDevice) {
+                monitorOptions.push(['--right-of', prevDevice].join(' '));
+            }
+
+            prevDevice = deviceKey;
+        }
+        xrandrOptions += monitorOptions.join(' ');
+    });
+
+    console.log(xrandrOptions);
+
+
+    // sanity check if at least one monitor is on
+    if (xrandrOptions.indexOf('--auto') === -1) {
+        throw 'Non of the given monitors are connected, aborting...';
+    }
 
     return xrandrOptions;
 }
@@ -80,8 +89,27 @@ function executePostCmd() {
     });
 }
 
+if (argv.help || argv.h) {
+    console.log(
+`Simple helper for turning on/off connected/disconnected monitors with 'xrandr'.
+
+Usage:
+
+'swm [monitor-1...montior-n]' e.g. 'swm LVDS1 HDMI1'
+
+If 'monitor-1' to 'monitor-n' is specified 'swm' will turn on these monitors
+and place them from left to right in the order given. If a provided monitor is
+not connected it will be skipped.
+
+If no monitors are specified all connected monitors will be turned on and
+placed from left to right in alphabetical order of their name.`
+    );
+
+    process.exit(2);
+}
+
 getDevices()
-    .then(genXrandrOptions)
+    .then(generateXrandrOptions.bind(null, argv._))
     .then(switchDevices)
     .then(executePostCmd)
     .catch(err => {

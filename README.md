@@ -2,13 +2,17 @@
 
 Simple helper for turning on/off connected/disconnected monitors with `xrandr`.
 
-It uses `xrandr` to detect on which connectors there are monitors connected. It
-then runs `xrandr` and sets all disconnected monitors to `off` and all connected
-monitors to `on`.
+## Usage
 
-Monitors will be turned on with xrandr `--auto` option which tries to detect
-the optimal video setting.
+`swm [monitor-1...montior-n]` e.g. `swm LVDS1 HDMI1`
 
-If there are multiple monitors connected, each monitor is placed to the right
-of the previous monitor. This order is currently driven as xrandr lists the
-connectors.
+If `monitor-1` to `monitor-n` is specified `swm` will turn on these monitors
+and place them from left to right in the order given. If a provided monitor is
+not connected it will be skipped.
+
+If no monitors are specified all connected monitors will be turned on and
+placed from left to right in alphabetical order of their name.
+
+## Requirements
+
+Node.js > 4.x on your PATH.
