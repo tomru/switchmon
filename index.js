@@ -50,9 +50,6 @@ function generateXrandrOptions(monitorList, devices) {
         xrandrOptions += monitorOptions.join(' ');
     });
 
-    console.log(xrandrOptions);
-
-
     // sanity check if at least one monitor is on
     if (xrandrOptions.indexOf('--auto') === -1) {
         throw 'Non of the given monitors are connected, aborting...';
