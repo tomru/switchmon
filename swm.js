@@ -1,7 +1,5 @@
-#!/usr/bin/env node
 'use strict';
 
-const argv = require('minimist')(process.argv.slice(2));
 const xrandrParse = require('xrandr-parse');
 const exec = require('child_process').exec;
 
@@ -71,12 +69,12 @@ function switchDevices(xrandrOptions) {
     });
 }
 
-function executePostCmd() {
-    if (!argv.postCmd) {
+function executePostCmd(postCmd) {
+    if (!postCmd) {
         return;
     }
     return new Promise((resolve, reject) => {
-        exec(argv.postCmd, (err, stdout, stderr) => {
+        exec(postCmd, (err, stdout, stderr) => {
             if (err || stderr) {
                 reject(err);
                 return;
@@ -86,29 +84,7 @@ function executePostCmd() {
     });
 }
 
-if (argv.help || argv.h) {
-    console.log(
-`Simple helper for turning on/off connected/disconnected monitors with 'xrandr'.
-
-Usage:
-
-'swm [monitor-1...montior-n]' e.g. 'swm LVDS1 HDMI1'
-
-If 'monitor-1' to 'monitor-n' is specified 'swm' will turn on these monitors
-and place them from left to right in the order given. If a provided monitor is
-not connected it will be skipped.
-
-If no monitors are specified all connected monitors will be turned on and
-placed from left to right in alphabetical order of their name.`
-    );
-
-    process.exit(2);
-}
-
-getDevices()
-    .then(generateXrandrOptions.bind(null, argv._))
-    .then(switchDevices)
-    .then(executePostCmd)
-    .catch(err => {
-        console.error(err);
-    });
+module.exports.getDevices = getDevices;
+module.exports.generateXrandrOptions = generateXrandrOptions;
+module.exports.switchDevices = switchDevices;
+module.exports.executePostCmd = executePostCmd;
