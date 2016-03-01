@@ -15,31 +15,47 @@ function getDevices() {
     });
 }
 
-function generateXrandrOptions(explicitlySelectedMonitors, devices) {
-    let xrandrOptions = '';
-    let deviceOrder = Object.keys(devices).sort();
+function orderDeviceKeys(selectedDevices, devices) {
+    let orderedDeviceKeys = Object.keys(devices).sort();
 
     // fix the sort order if monitors were explicitly selected
-    explicitlySelectedMonitors.reverse().forEach((monitor) => {
-        const index = deviceOrder.indexOf(monitor);
+    selectedDevices.reverse().forEach((monitor) => {
+        const index = orderedDeviceKeys.indexOf(monitor);
         if (index < 0) {
             console.error('Unkown monitor', monitor, '(ignored)');
             return;
         }
-        deviceOrder.splice(index, 1);
-        deviceOrder.unshift(monitor);
+        orderedDeviceKeys.splice(index, 1);
+        orderedDeviceKeys.unshift(monitor);
     });
 
+    return orderedDeviceKeys;
+}
+
+function setActivationFlag(selectedDevices, devices) {
+    const result = {};
+    Object.keys(devices).forEach(deviceKey => {
+        const device = Object.assign({}, devices[deviceKey]);
+        device.activate = device.connected && (!selectedDevices.length || selectedDevices.indexOf(deviceKey) > -1 );
+        result[deviceKey] = device;
+    });
+    return result;
+}
+
+function generateXrandrOptions(selectedDevices, rawDevices) {
+    let xrandrOptions = '';
     let prevDevice;
-    deviceOrder.forEach(deviceKey => {
+    let devices = setActivationFlag(selectedDevices, rawDevices);
+
+    orderDeviceKeys(selectedDevices, devices).forEach(deviceKey => {
         const device = devices[deviceKey];
+        const monitorOptions = ['', '--output', deviceKey];
 
-        const activateDevice = device.connected && (!explicitlySelectedMonitors.length || explicitlySelectedMonitors.indexOf(deviceKey) > -1 );
+        if (!device.activate) {
+            monitorOptions.push('--off');
+        } else {
+            monitorOptions.push('--auto');
 
-        const deviceStatus = activateDevice ? '--auto' : '--off';
-        const monitorOptions = ['', '--output', deviceKey, deviceStatus];
-
-        if (device.connected) {
             if (prevDevice) {
                 monitorOptions.push(['--right-of', prevDevice].join(' '));
             }
