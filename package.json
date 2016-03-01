@@ -6,7 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "bin" : { "swm" : "./cli.js" },
+  "bin": {
+    "swm": "./cli.js"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/tomru/switchmon.git"
@@ -23,6 +25,7 @@
   "homepage": "https://github.com/tomru/switchmon#readme",
   "dependencies": {
     "minimist": "^1.2.0",
+    "xdg": "^0.1.1",
     "xrandr-parse": "^0.1.1"
   }
 }
