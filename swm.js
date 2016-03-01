@@ -15,13 +15,12 @@ function getDevices() {
     });
 }
 
-function generateXrandrOptions(monitorList, devices) {
+function generateXrandrOptions(explicitlySelectedMonitors, devices) {
     let xrandrOptions = '';
     let deviceOrder = Object.keys(devices).sort();
 
-    // remove explicitly selected monitors inside the array and add them to the
-    // beginning in the order they have been specified.
-    monitorList.reverse().forEach((monitor) => {
+    // fix the sort order if monitors were explicitly selected
+    explicitlySelectedMonitors.reverse().forEach((monitor) => {
         const index = deviceOrder.indexOf(monitor);
         if (index < 0) {
             console.error('Unkown monitor', monitor, '(ignored)');
@@ -35,7 +34,9 @@ function generateXrandrOptions(monitorList, devices) {
     deviceOrder.forEach(deviceKey => {
         const device = devices[deviceKey];
 
-        const deviceStatus = device.connected ? '--auto' : '--off';
+        const activateDevice = device.connected && (!explicitlySelectedMonitors.length || explicitlySelectedMonitors.indexOf(deviceKey) > -1 );
+
+        const deviceStatus = activateDevice ? '--auto' : '--off';
         const monitorOptions = ['', '--output', deviceKey, deviceStatus];
 
         if (device.connected) {
