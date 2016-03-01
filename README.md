@@ -2,30 +2,51 @@
 
 Simple helper for turning on/off connected/disconnected monitors with `xrandr`.
 
-## Usage
-`swm [monitor-1...montior-n] [--postCmd="cmd"]` e.g. `swm LVDS1 HDMI1`
+## Synopsis
+`swm`
 
-If `monitor-1` to `monitor-n` is specified `swm` will turn on these monitors
-and place them from left to right in the order given. If a provided monitor is
-not connected it will be skipped.
+`swm [monitor-1..montior-n]`
+
+`swm --profile external`
+
+`swm --list`
+
+## Description
+To turn on/off connected/disconnected monitors.
 
 If no monitors are specified all connected monitors will be turned on and
 placed from left to right in alphabetical order of their name.
 
-If `--postCmd` is given, this command is executed after switching the monitors.
-This is usefull to tell your window manager to re-detect monitors, e.g. for
-herbstluftwm `herbstclient reload`.
+If monitors `monitor-1..monitor-n` are specified these monitors will be turned
+on and place them from left to right in the order given.
 
-`swm -l` or `swm --list`
+* `--profile profilename` or `-p profilename`
 
-List all devices with the connectivity status.
+  If a profile is specified, the configured monitors will be turned on.
+
+* `--postCmd "some cmd"`
+
+  A post command is executed after switching the monitors.  This is usefull to
+  tell your window manager to re-detect monitors, e.g. for herbstluftwm
+  `herbstclient reload`.
+
+* `-l` or `swm --list`
+
+  List all devices with the connectivity status.
+
+## Configuration
 
 The configuration can be placed in `$XDG_CONFIG_HOME/switchmon/config.json` in
 the form of
 
 ```
 {
-    "postCmd": "some command"
+    "postCmd": "some command",
+    "profiles": {
+        "internal": ["LVDS1"],
+        "external": ["HDMI1"],
+        "dual": ["LVDS1", "HDMI1"]
+    }
 }
 ```
 
