@@ -17,16 +17,31 @@ and place them from left to right in the order given. If a provided monitor is
 not connected it will be skipped.
 
 If no monitors are specified all connected monitors will be turned on and
-placed from left to right in alphabetical order of their name.`
+placed from left to right in alphabetical order of their name.
+
+'swm -l' or 'swm --list'
+
+List all devices with the connectivity status.`
     );
 
     process.exit(2);
 }
 
-swm.getDevices()
-    .then(swm.generateXrandrOptions.bind(null, argv._))
-    .then(swm.switchDevices)
-    .then(swm.executePostCmd.bind(null, argv.postCmd))
-    .catch(err => {
-        console.error(err);
-    });
+if (argv.list || argv.l) {
+    swm.getDevices()
+        .then(devices => {
+            console.log('Detected devices:\n');
+            Object.keys(devices)
+                .sort(key => !devices[key].connected)
+                .forEach(key => console.log(key + ':', devices[key].connected ? 'Connected' : 'Disconnected'));
+            process.exit(0);
+        });
+} else {
+    swm.getDevices()
+        .then(swm.generateXrandrOptions.bind(null, argv._))
+        .then(swm.switchDevices)
+        .then(swm.executePostCmd.bind(null, argv.postCmd))
+        .catch(err => {
+            console.error(err);
+        });
+}
