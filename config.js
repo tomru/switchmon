@@ -4,6 +4,7 @@ const configPath = require('xdg').basedir.configPath('switchmon/config.json');
 
 const defaults = {
     postCmd: undefined,
+    profiles: {},
 };
 
 let config = Object.assign({}, defaults);

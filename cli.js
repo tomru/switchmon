@@ -5,6 +5,7 @@ const argv = require('minimist')(process.argv.slice(2));
 const swm = require('./swm.js');
 const config = require('./config.js');
 const postCmd = argv.postCmd || config.postCmd;
+const profile = argv.profile || argv.p;
 
 if (argv.help || argv.h) {
     console.log(
@@ -41,8 +42,10 @@ the form of
     process.exit(2);
 }
 
+const devices = swm.getDevices();
+
 if (argv.list || argv.l) {
-    swm.getDevices()
+    devices
         .then(devices => {
             console.log('Detected devices:\n');
             Object.keys(devices)
@@ -51,8 +54,21 @@ if (argv.list || argv.l) {
             process.exit(0);
         });
 } else {
-    swm.getDevices()
-        .then(swm.generateXrandrOptions.bind(null, argv._))
+    let selectedMonitors = argv._;
+
+    if (profile) {
+        if (!config.profiles[profile]) {
+            console.error('profile', profile, 'not found in config');
+            process.exit(1);
+        }
+        selectedMonitors = config.profiles[profile];
+        console.log('Using profile', profile);
+    }
+
+    console.log('Switching on', selectedMonitors);
+
+    devices
+        .then(swm.generateXrandrOptions.bind(null, selectedMonitors))
         .then(swm.switchDevices)
         .then(swm.executePostCmd.bind(null, postCmd))
         .catch(err => {
