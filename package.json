@@ -4,7 +4,7 @@
   "description": "Simple helper for turning on/off connected/disconnected monitors with xrandr",
   "main": "indes.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "mocha"
   },
   "bin": {
     "swm": "./cli.js"
@@ -27,5 +27,10 @@
     "minimist": "^1.2.0",
     "xdg": "^0.1.1",
     "xrandr-parse": "^0.1.1"
+  },
+  "devDependencies": {
+    "mocha": "^2.4.5",
+    "proxyquire": "^1.7.4",
+    "sinon": "^1.17.3"
   }
 }
