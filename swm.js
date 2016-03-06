@@ -46,15 +46,16 @@ function orderDeviceKeys(selectedDevices, devices) {
 
 function setActivationFlag(selectedDevices, devices) {
     const result = {};
+    const selectByDefault = selectedDevices.length === 0;
 
     Object.keys(devices).forEach(deviceKey => {
         const device = Object.assign({}, devices[deviceKey]);
-        const isSelected = !selectedDevices.length || selectedDevices.indexOf(deviceKey) > -1;
+        const isSelected = selectedDevices.indexOf(deviceKey) > -1;
 
-        if (isSelected) {
+        if (isSelected || selectByDefault) {
             if (device.connected) {
                 device.activate = true;
-            } else {
+            } else if (isSelected) {
                 console.error(deviceKey, 'not connected. Skipping...');
             }
         }
