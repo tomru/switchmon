@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/tomru/switchmon.svg?branch=master)](https://travis-ci.org/tomru/switchmon)
+[![Build Status](https://travis-ci.org/tomru/switchmon.svg?branch=master)](https://travis-ci.org/tomru/switchmon) [![Coverage Status](https://coveralls.io/repos/github/tomru/switchmon/badge.svg?branch=coverage)](https://coveralls.io/github/tomru/switchmon?branch=coverage)
 
 # SWM - Switch Monitors
 
