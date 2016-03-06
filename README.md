@@ -12,6 +12,7 @@ Simple helper for turning on/off connected/disconnected monitors with `xrandr`.
 `swm --list`
 
 ## Description
+
 To turn on/off connected/disconnected monitors.
 
 If no monitors are specified all connected monitors will be turned on and
