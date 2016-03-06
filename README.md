@@ -1,7 +1,6 @@
-# SWM - Switch Monitors
-
 [![Build Status](https://travis-ci.org/tomru/switchmon.svg?branch=master)](https://travis-ci.org/tomru/switchmon)
 
+# SWM - Switch Monitors
 
 Simple helper for turning on/off connected/disconnected monitors with `xrandr`.
 
