@@ -16,21 +16,18 @@ function connectionStatus(device) {
 
 if (argv.help || argv.h) {
     console.log(usage);
-    process.exit(0);
-}
-
-const devices = swm.getDevices();
-
-if (argv.list || argv.l) {
+    return;
+} else if (argv.list || argv.l) {
+    const devices = swm.getDevices();
     devices
         .then(devices => {
             console.log('Detected devices:\n');
             Object.keys(devices)
                 .sort(key => !devices[key].connected)
                 .forEach(key => console.log(key + ':', connectionStatus(devices[key])));
-            process.exit(0);
         });
 } else {
+    const devices = swm.getDevices();
     let selectedMonitors = argv._;
 
     if (profile) {
@@ -50,6 +47,5 @@ if (argv.list || argv.l) {
         .then(swm.executePostCmd.bind(null, postCmd))
         .catch(err => {
             console.error(err);
-            process.exit(2);
         });
 }
