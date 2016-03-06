@@ -4,7 +4,8 @@
   "description": "Simple helper for turning on/off connected/disconnected monitors with xrandr",
   "main": "cli.js",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "testwatch": "mocha -w"
   },
   "bin": {
     "swm": "./cli.js"
