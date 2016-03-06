@@ -4,7 +4,7 @@
   "description": "Simple helper for turning on/off connected/disconnected monitors with xrandr",
   "main": "cli.js",
   "scripts": {
-    "test": "mocha",
+    "test": "istanbul cover _mocha",
     "testwatch": "mocha -w"
   },
   "bin": {
@@ -30,6 +30,7 @@
     "xrandr-parse": "^0.1.1"
   },
   "devDependencies": {
+    "istanbul": "^0.4.2",
     "mocha": "^2.4.5",
     "proxyquire": "^1.7.4",
     "sinon": "^1.17.3"
