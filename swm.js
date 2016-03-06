@@ -3,16 +3,28 @@
 const xrandrParse = require('xrandr-parse');
 const exec = require('child_process').exec;
 
-function getDevices() {
+function executeCmd(cmd) {
     return new Promise((resolve, reject) => {
-        exec('xrandr', (err, stdout, stderr) => {
+        exec(cmd, (err, stdout, stderr) => {
             if (err || stderr) {
                 reject(err);
                 return;
             }
-            resolve(xrandrParse(stdout));
+            resolve(stdout);
         });
     });
+}
+
+function getDevices() {
+    return executeCmd('xrandr').then(stdout => xrandrParse(stdout));
+}
+
+function switchDevices(xrandrOptions) {
+    return executeCmd('xrandr ' + xrandrOptions);
+}
+
+function executePostCmd(postCmd) {
+    return executeCmd(postCmd);
 }
 
 function orderDeviceKeys(selectedDevices, devices) {
@@ -77,38 +89,10 @@ function generateXrandrOptions(selectedDevices, rawDevices) {
 
     // sanity check if at least one monitor is on
     if (xrandrOptions.indexOf('--auto') === -1) {
-        throw 'Non of the given monitors are connected, aborting...';
+        throw new Error('Non of the given monitors are connected, aborting...');
     }
 
     return xrandrOptions;
-}
-
-function switchDevices(xrandrOptions) {
-    return new Promise((resolve, reject) => {
-        const cmd = 'xrandr ' + xrandrOptions;
-        exec(cmd, (err, stdout, stderr) => {
-            if (err || stderr) {
-                reject(err);
-                return;
-            }
-            resolve();
-        });
-    });
-}
-
-function executePostCmd(postCmd) {
-    if (!postCmd) {
-        return;
-    }
-    return new Promise((resolve, reject) => {
-        exec(postCmd, (err, stdout, stderr) => {
-            if (err || stderr) {
-                reject(err);
-                return;
-            }
-            resolve();
-        });
-    });
 }
 
 module.exports.getDevices = getDevices;
