@@ -41,11 +41,9 @@ if (argv.help || argv.h) {
 
     console.log('Switching on', selectedMonitors);
 
-    devices
-        .then(swm.generateXrandrOptions.bind(null, selectedMonitors))
-        .then(swm.switchDevices)
-        .then(swm.executePostCmd.bind(null, postCmd))
-        .catch(err => {
-            console.error(err);
-        });
+    devices.then(devices => {
+        const xrandrOptions = swm.generateXrandrOptions(selectedMonitors, devices);
+        swm.switchDevices(xrandrOptions);
+        swm.executePostCmd(postCmd);
+    });
 }
