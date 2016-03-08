@@ -39,7 +39,7 @@ if (argv.help || argv.h) {
         console.log('Using profile', profile);
     }
 
-    console.log('Switching on', selectedMonitors);
+    console.log('Switching on', selectedMonitors.length ? selectedMonitors : 'all connected monitors');
 
     devices.then(devices => {
         const xrandrOptions = swm.generateXrandrOptions(selectedMonitors, devices);
