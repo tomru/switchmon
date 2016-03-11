@@ -8,7 +8,7 @@ function executeCmd(cmd, callback) {
 }
 
 function getDevices(callback) {
-    executeCmd('xrandr', (err, stdout) => callback(err, xrandrParse(stdout)));
+    executeCmd('xrandr', (err, stdout) => callback(err, err ? null : xrandrParse(stdout)));
 }
 
 function switchDevices(xrandrOptions, callback) {

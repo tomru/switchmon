@@ -33,19 +33,18 @@ describe('cli', () => {
         const minimistStub = sandbox.stub();
         minimistStub.returns({l: true});
         const getDevicesStub = sandbox.stub();
-        getDevicesStub.returns({
-            then: cb => cb({
-                LVDS1: {connected: true},
-                HDMI2: {connected: false}
-            })
-        });
 
-        const cli = proxyquire('../cli.js', {
+        proxyquire('../cli.js', {
             'minimist': minimistStub,
             './swm.js': {
                 getDevices: getDevicesStub
             }
         });
+        getDevicesStub.args[0][0](null, {
+            LVDS1: {connected: true},
+            HDMI2: {connected: false}
+        });
+
         assert.equal(getDevicesStub.callCount, 1);
         assert.equal(consoleLogSpy.callCount, 3);
         assert.equal(consoleLogSpy.args[0][0], 'Detected devices:\n');
@@ -75,9 +74,7 @@ describe('cli', () => {
                 HDMI2: {connected: false}
             };
 
-            getDevicesStub = sandbox.stub().returns({
-                then: cb => cb(deviceData)
-            });
+            getDevicesStub = sandbox.stub();
             generateXrandrOptionsStub = sandbox.stub().returns('[some xrandr options]');
             switchDevicesStub = sandbox.stub();
             executePostCmdStub = sandbox.stub();
@@ -92,6 +89,8 @@ describe('cli', () => {
                 },
                 './config.js': {}
             });
+
+            getDevicesStub.args[0][0](null, deviceData);
         });
 
         it('calls getDevices', () => {
@@ -111,7 +110,6 @@ describe('cli', () => {
         it('calls executePostCmd', () => {
            assert.equal(executePostCmdStub.callCount, 1);
            assert.equal(executePostCmdStub.args[0][0], '[some post cmd]');
-
         });
     });
 });
