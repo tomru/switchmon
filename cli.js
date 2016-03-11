@@ -18,16 +18,16 @@ if (argv.help || argv.h) {
     console.log(usage);
     return;
 } else if (argv.list || argv.l) {
-    const devices = swm.getDevices();
-    devices
-        .then(devices => {
-            console.log('Detected devices:\n');
-            Object.keys(devices)
-                .sort(key => !devices[key].connected)
-                .forEach(key => console.log(key + ':', connectionStatus(devices[key])));
-        });
+    const devices = swm.getDevices((err, devices) => {
+        if (err) {
+            throw new Error(err);
+        }
+        console.log('Detected devices:\n');
+        Object.keys(devices)
+            .sort(key => !devices[key].connected)
+            .forEach(key => console.log(key + ':', connectionStatus(devices[key])));
+    });
 } else {
-    const devices = swm.getDevices();
     let selectedMonitors = argv._;
 
     if (profile) {
@@ -41,7 +41,10 @@ if (argv.help || argv.h) {
 
     console.log('Switching on', selectedMonitors.length ? selectedMonitors : 'all connected monitors');
 
-    devices.then(devices => {
+    swm.getDevices((err, devices) => {
+        if (err) {
+            throw new Error(err);
+        }
         const xrandrOptions = swm.generateXrandrOptions(selectedMonitors, devices);
         swm.switchDevices(xrandrOptions);
         swm.executePostCmd(postCmd);
