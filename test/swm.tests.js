@@ -32,43 +32,32 @@ describe('swm', () => {
         });
 
         it('calls exec', () => {
-            swm.getDevices();
+            swm.getDevices(sandbox.stub());
 
             assert.equal(execStub.callCount, 1);
             assert.equal(execStub.args[0][0], 'xrandr');
         });
 
-        it('returns promise', () => {
-            const devices = swm.getDevices();
-            assert.equal(typeof devices.then, 'function');
-            assert.equal(typeof devices.catch, 'function');
-        });
-
-        it('rejects when exec passes error', (done) => {
-            const devices = swm.getDevices();
-            const cb = execStub.args[0][1];
-            cb('some error');
-
-            return devices.catch((err) => {
+        it('passes error when exec passes error', (done) => {
+            const devices = swm.getDevices((err, devices) => {
                 assert.equal(xrandrParseStub.callCount, 0);
                 assert.equal(err, 'some error');
                 done();
             });
-
+            const cb = execStub.args[0][1];
+            cb('some error');
         });
 
         it('parses result', (done) => {
-            xrandrParseStub.returns('some result');
-            const devices = swm.getDevices();
-            const cb = execStub.args[0][1];
-            cb(null, 'stdout');
-
-            return devices.then((result) => {
-                assert.equal(xrandrParseStub.args[0][0], 'stdout');
+            xrandrParseStub.returns('[some result]');
+            swm.getDevices((err, devices) => {
+                assert.equal(xrandrParseStub.args[0][0], '[some stdout]');
                 assert.equal(xrandrParseStub.callCount, 1);
-                assert.equal(result, 'some result');
+                assert.equal(devices, '[some result]');
                 done();
             });
+            const cb = execStub.args[0][1];
+            cb(null, '[some stdout]');
         });
     });
 
@@ -144,27 +133,19 @@ describe('swm', () => {
         });
 
         it('calls exec with xrandr and opitons', () => {
-            swm.switchDevices('[some options]');
+            swm.switchDevices('[some options]', sandbox.stub());
 
             assert.equal(execStub.callCount, 1);
             assert.equal(execStub.args[0][0], 'xrandr [some options]');
         });
 
-        it('returns promise', () => {
-            const promise = swm.switchDevices('[some options]');
-            assert.equal(typeof promise.then, 'function');
-            assert.equal(typeof promise.catch, 'function');
-        });
-
-        it('rejects when exec passes error', (done) => {
-            const promise = swm.switchDevices('[some options]');
-            const cb = execStub.args[0][1];
-            cb('some error');
-
-            return promise.catch((err) => {
+        it('passes error when exec passes error', (done) => {
+            swm.switchDevices('[some options]', (err, devices) => {
                 assert.equal(err, 'some error');
                 done();
             });
+            const cb = execStub.args[0][1];
+            cb('some error');
         });
     });
 
@@ -188,21 +169,13 @@ describe('swm', () => {
             assert.equal(execStub.args[0][0], '[some cmd]');
         });
 
-        it('returns promise', () => {
-            const promise = swm.executePostCmd('[some cmd]');
-            assert.equal(typeof promise.then, 'function');
-            assert.equal(typeof promise.catch, 'function');
-        });
-
-        it('rejects when exec passes error', (done) => {
-            const promise = swm.executePostCmd('[some cmd]');
-            const cb = execStub.args[0][1];
-            cb('some error');
-
-            return promise.catch((err) => {
-                assert.equal(err, 'some error');
+        it('passes error when exec passes error', (done) => {
+            swm.executePostCmd('[some cmd]', (err, devices) => {
+                assert.equal(err, '[some error]');
                 done();
             });
+            const cb = execStub.args[0][1];
+            cb('[some error]');
         });
     });
 });

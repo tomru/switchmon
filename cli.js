@@ -16,20 +16,17 @@ function connectionStatus(device) {
 
 if (argv.help || argv.h) {
     console.log(usage);
-    process.exit(0);
-}
-
-const devices = swm.getDevices();
-
-if (argv.list || argv.l) {
-    devices
-        .then(devices => {
-            console.log('Detected devices:\n');
-            Object.keys(devices)
-                .sort(key => !devices[key].connected)
-                .forEach(key => console.log(key + ':', connectionStatus(devices[key])));
-            process.exit(0);
-        });
+    return;
+} else if (argv.list || argv.l) {
+    const devices = swm.getDevices((err, devices) => {
+        if (err) {
+            throw new Error(err);
+        }
+        console.log('Detected devices:\n');
+        Object.keys(devices)
+            .sort(key => !devices[key].connected)
+            .forEach(key => console.log(key + ':', connectionStatus(devices[key])));
+    });
 } else {
     let selectedMonitors = argv._;
 
@@ -42,14 +39,14 @@ if (argv.list || argv.l) {
         console.log('Using profile', profile);
     }
 
-    console.log('Switching on', selectedMonitors);
+    console.log('Switching on', selectedMonitors.length ? selectedMonitors : 'all connected monitors');
 
-    devices
-        .then(swm.generateXrandrOptions.bind(null, selectedMonitors))
-        .then(swm.switchDevices)
-        .then(swm.executePostCmd.bind(null, postCmd))
-        .catch(err => {
-            console.error(err);
-            process.exit(2);
-        });
+    swm.getDevices((err, devices) => {
+        if (err) {
+            throw new Error(err);
+        }
+        const xrandrOptions = swm.generateXrandrOptions(selectedMonitors, devices);
+        swm.switchDevices(xrandrOptions);
+        swm.executePostCmd(postCmd);
+    });
 }

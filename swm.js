@@ -3,28 +3,20 @@
 const xrandrParse = require('xrandr-parse');
 const exec = require('child_process').exec;
 
-function executeCmd(cmd) {
-    return new Promise((resolve, reject) => {
-        exec(cmd, (err, stdout, stderr) => {
-            if (err || stderr) {
-                reject(err);
-                return;
-            }
-            resolve(stdout);
-        });
-    });
+function executeCmd(cmd, callback) {
+    exec(cmd, callback);
 }
 
-function getDevices() {
-    return executeCmd('xrandr').then(stdout => xrandrParse(stdout));
+function getDevices(callback) {
+    executeCmd('xrandr', (err, stdout) => callback(err, err ? null : xrandrParse(stdout)));
 }
 
-function switchDevices(xrandrOptions) {
-    return executeCmd('xrandr ' + xrandrOptions);
+function switchDevices(xrandrOptions, callback) {
+    executeCmd('xrandr ' + xrandrOptions, callback);
 }
 
-function executePostCmd(postCmd) {
-    return executeCmd(postCmd);
+function executePostCmd(postCmd, callback) {
+    executeCmd(postCmd, callback);
 }
 
 function orderDeviceKeys(selectedDevices, devices) {
