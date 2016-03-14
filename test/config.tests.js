@@ -15,7 +15,7 @@ describe('config', () => {
         xdgBasedirConfigStub = sandbox.stub();
     });
 
-    afterEach(function() {
+    afterEach(() => {
         sandbox.restore();
     });
 
