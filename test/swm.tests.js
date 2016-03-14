@@ -11,7 +11,7 @@ describe('swm', () => {
         sandbox = sinon.sandbox.create();
     });
 
-    afterEach(function() {
+    afterEach(() => {
         sandbox.restore();
     });
 
@@ -149,7 +149,7 @@ describe('swm', () => {
         });
     });
 
-    describe('executePostCmd', function() {
+    describe('executePostCmd', () => {
         let execStub;
         let swm;
 
