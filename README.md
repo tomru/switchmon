@@ -55,4 +55,4 @@ the form of
 
 ## Requirements
 
-Node.js > 4.x on your PATH.
+Node.js > v4 on your PATH.
