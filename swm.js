@@ -8,7 +8,9 @@ function executeCmd(cmd, callback) {
 }
 
 function getDevices(callback) {
-    executeCmd('xrandr', (err, stdout) => callback(err, err ? null : xrandrParse(stdout)));
+    executeCmd('xrandr', (err, stdout) =>
+        callback(err, err ? null : xrandrParse(stdout))
+    );
 }
 
 function switchDevices(xrandrOptions, callback) {
@@ -23,7 +25,7 @@ function orderDeviceKeys(selectedDevices, devices) {
     let orderedDeviceKeys = Object.keys(devices).sort();
 
     // fix the sort order if monitors were explicitly selected
-    selectedDevices.reverse().forEach((monitor) => {
+    selectedDevices.reverse().forEach(monitor => {
         const index = orderedDeviceKeys.indexOf(monitor);
         if (index < 0) {
             console.error('Unkown monitor', monitor, '(ignored)');
