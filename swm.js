@@ -1,96 +1,130 @@
 'use strict';
 
 const xrandrParse = require('xrandr-parse');
-const exec = require('child_process').exec;
+const util = require('util');
+const exec = util.promisify(require('child_process').exec);
 
-function executeCmd(cmd, callback) {
-    exec(cmd, callback);
+async function getDevices() {
+    const { stdout } = await exec('xrandr');
+    return xrandrParse(stdout);
 }
 
-function getDevices(callback) {
-    executeCmd('xrandr', (err, stdout) =>
-        callback(err, err ? null : xrandrParse(stdout))
-    );
-}
+function sortDeviceKeys(devices) {
+    return (keyA, keyB) => {
+        const aConnected = devices[keyA].connected;
+        const bConnected = devices[keyB].connected;
 
-function switchDevices(xrandrOptions, callback) {
-    executeCmd('xrandr ' + xrandrOptions, callback);
-}
-
-function executePostCmd(postCmd, callback) {
-    executeCmd(postCmd, callback);
-}
-
-function orderDeviceKeys(selectedDevices, devices) {
-    let orderedDeviceKeys = Object.keys(devices).sort();
-
-    // fix the sort order if monitors were explicitly selected
-    selectedDevices.reverse().forEach(monitor => {
-        const index = orderedDeviceKeys.indexOf(monitor);
-        if (index < 0) {
-            console.error('Unkown monitor', monitor, '(ignored)');
-            return;
-        }
-        orderedDeviceKeys.splice(index, 1);
-        orderedDeviceKeys.unshift(monitor);
-    });
-
-    return orderedDeviceKeys;
-}
-
-function setActivationFlag(selectedDevices, devices) {
-    const result = {};
-    const selectByDefault = selectedDevices.length === 0;
-
-    Object.keys(devices).forEach(deviceKey => {
-        const device = Object.assign({}, devices[deviceKey]);
-        const isSelected = selectedDevices.indexOf(deviceKey) > -1;
-
-        if (isSelected || selectByDefault) {
-            if (device.connected) {
-                device.activate = true;
-            } else if (isSelected) {
-                console.error(deviceKey, 'not connected. Skipping...');
-            }
+        if (!aConnected && bConnected) {
+            return 1;
         }
 
-        result[deviceKey] = device;
-    });
-    return result;
+        if (aConnected && !bConnected) {
+            return -1;
+        }
+
+        return 0;
+    };
 }
 
-function generateXrandrOptions(selectedDevices, rawDevices) {
-    let xrandrOptions = '';
-    let prevDevice;
-    let devices = setActivationFlag(selectedDevices, rawDevices);
-
-    orderDeviceKeys(selectedDevices, devices).forEach(deviceKey => {
-        const device = devices[deviceKey];
-        const monitorOptions = ['', '--output', deviceKey];
-
-        if (!device.activate) {
-            monitorOptions.push('--off');
-        } else {
-            monitorOptions.push('--auto');
-
-            if (prevDevice) {
-                monitorOptions.push(['--right-of', prevDevice].join(' '));
-            }
-
-            prevDevice = deviceKey;
+function getSelectedAndConnectedDevices(selectedDevices, devices) {
+    const selectedAndConnected = selectedDevices.filter(deviceKey => {
+        if (!devices[deviceKey]) {
+            throw new Error(`${deviceKey} is not a valid monitor`);
         }
-        xrandrOptions += monitorOptions.join(' ');
+
+        return devices[deviceKey].connected;
     });
 
-    // sanity check if at least one monitor is on
-    if (xrandrOptions.indexOf('--auto') === -1) {
+    if (selectedDevices.length && !selectedAndConnected.length) {
         throw new Error('Non of the given monitors are connected, aborting...');
     }
+
+    return selectedAndConnected;
+}
+
+function getXrandrOptions(
+    deviceKeys,
+    devices,
+    positionParameter = '--right-of'
+) {
+    return deviceKeys.reduce((acc, deviceKey, currentIndex) => {
+        const device = devices[deviceKey];
+
+        const monitorOptions = [`--output ${deviceKey}`];
+
+        monitorOptions.push('--auto');
+
+        if (currentIndex > 0 && device.connected) {
+            monitorOptions.push(
+                `${positionParameter} ${deviceKeys[currentIndex - 1]}`
+            );
+        }
+
+        return [acc, ...monitorOptions].join(' ');
+    }, '');
+}
+
+async function generateXrandrOptions(
+    selectedDevices = [],
+    positionParameter = '--right-of'
+) {
+    const devices = await getDevices();
+
+    const selectedAndConnected = getSelectedAndConnectedDevices(
+        selectedDevices,
+        devices
+    );
+
+    if (selectedDevices.length && !selectedAndConnected.length) {
+        throw new Error('Non of the given monitors are connected, aborting...');
+    }
+
+    console.log(
+        'Switching on',
+        selectedAndConnected.length
+            ? selectedAndConnected.join(', ')
+            : 'all connected monitors'
+    );
+
+    const orderedDeviceKeys = [
+        ...selectedAndConnected,
+        ...Object.keys(devices)
+            .filter(key => !selectedAndConnected.includes(key))
+            .sort(sortDeviceKeys(devices))
+    ];
+
+    const xrandrOptions = getXrandrOptions(
+        orderedDeviceKeys,
+        devices,
+        positionParameter
+    );
 
     return xrandrOptions;
 }
 
-module.exports.getDevices = getDevices;
-module.exports.generateXrandrOptions = generateXrandrOptions;
-module.exports.switchDevices = switchDevices;
-module.exports.executePostCmd = executePostCmd;
+async function printDevices() {
+    const devices = await getDevices();
+
+    const connectedMonitors = Object.keys(devices).filter(
+        key => devices[key].connected
+    );
+    const disconnectedMonitors = Object.keys(devices).filter(
+        key => !devices[key].connected
+    );
+
+    console.log(`Connected Monitors: ${connectedMonitors.join(', ')}`);
+    console.log(`Disconnected Monitors: ${disconnectedMonitors.join(', ')}`);
+}
+
+async function activate(selectedMonitors, postCmd) {
+    const xrandrOptions = await generateXrandrOptions(selectedMonitors);
+
+    await exec(`xrandr ${xrandrOptions}`);
+
+    if (postCmd) {
+        await exec(postCmd);
+    }
+}
+
+module.exports.printDevices = printDevices;
+module.exports.activate = activate;

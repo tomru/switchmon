@@ -14,7 +14,10 @@
         "type": "git",
         "url": "git+https://github.com/tomru/switchmon.git"
     },
-    "keywords": ["xrandr", "monitor"],
+    "keywords": [
+        "xrandr",
+        "monitor"
+    ],
     "author": "Thomas Ruoff",
     "license": "MIT",
     "bugs": {
@@ -28,6 +31,7 @@
     },
     "devDependencies": {
         "coveralls": "^2.11.8",
+        "eslint": "^6.6.0",
         "istanbul": "^0.4.2",
         "mocha": "^2.4.5",
         "mocha-lcov-reporter": "^1.2.0",
