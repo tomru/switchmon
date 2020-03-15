@@ -31,4 +31,5 @@ if (profile) {
     console.log('Using profile', profile);
 }
 
+console.log('Uh, I like it!');
 swm.activate(selectedMonitors, postCmd);
